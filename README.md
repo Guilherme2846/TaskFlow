@@ -45,3 +45,11 @@ O ChatGPT com Codex apoiou o planejamento, a programação, os testes e a docume
 
 A proposta comercial é hospedar uma única aplicação com contas individuais. Uma hipótese é oferecer gratuitamente a agenda básica e cobrar R$ 9,90 por mês por lembretes e tarefas recorrentes. O preço é uma proposta acadêmica. Cobrança e recursos premium são próximos passos.
 
+
+## Assistente de estudos e API
+
+Na agenda, pergunte “Quais tarefas estão atrasadas?” ou “Por onde começar?”. O navegador chama a API do TaskFlow por POST em public/assistente.php. Ela exige sessão e token do formulário, consulta as tarefas da conta e devolve JSON. Cada pergunta é independente.
+
+O modo padrão usa um classificador Naive Bayes multinomial treinado com exemplos curtos de quatro intenções em português. Ele identifica a intenção e o PHP monta a resposta com os registros reais. Funciona offline. O vocabulário é limitado, e perguntas ambíguas podem ser classificadas incorretamente.
+
+O modo OpenAI é opcional e gera texto pela Responses API. A escolha desse modo envia a pergunta e até 50 tarefas (título, prazo, prioridade e status). Para habilitar, configure OPENAI_API_KEY no ambiente do processo PHP, com uma chave de API com acesso ao modelo gpt-4.1-mini, e reinicie o servidor. OPENAI_MODEL permite escolher outro modelo disponível na conta. Mantenha a chave fora do código. O modo local continua disponível sem configuração.
