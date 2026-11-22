@@ -14,8 +14,14 @@ if ($_SERVER['REQUEST_METHOD']!=='POST') reply(405,'Use POST.');
 if (!isset($_SESSION['token']) || !hash_equals($_SESSION['token'],field('token'))) reply(403,'Atualize a página.');
 $q=field('question');$mode=field('mode');
 if ($q==='' || strlen($q)>2400 || !in_array($mode,['local','cloud'],true)) reply(422,'Confira a pergunta e o modo.');
+$category=field('category');
+if ($mode==='cloud') {
+    $recent=array_values(array_filter($_SESSION['cloud_requests']??[], fn($at)=>$at>time()-60));
+    if(count($recent)>=4) reply(429,'Aguarde um minuto para consultar a OpenAI novamente.');
+    $recent[]=time(); $_SESSION['cloud_requests']=$recent;
+}
 $user=(int)$_SESSION['user'];session_write_close();
-$tasks=rows(database(),"SELECT title,due,priority,status FROM tasks WHERE user_id=? ORDER BY (status='Concluída'),due,CASE priority WHEN 'Alta' THEN 1 WHEN 'Média' THEN 2 ELSE 3 END,id",[$user]);
+$tasks=rows(database(),"SELECT title,due,priority,status,category FROM tasks WHERE user_id=? AND (?='' OR category=?) ORDER BY (status='Concluída'),due,CASE priority WHEN 'Alta' THEN 1 WHEN 'Média' THEN 2 ELSE 3 END,id",[$user,$category,$category]);
 $today=date('Y-m-d');
 if ($mode==='local') reply(200,localAnswer($tasks,$q,$today));
 $key=getenv('OPENAI_API_KEY');

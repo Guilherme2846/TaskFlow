@@ -44,7 +44,7 @@ if ($_SERVER['REQUEST_METHOD']==='POST') {
             $from=field('from'); guard(in_array($from,array_slice($statuses,0,2),true),'Status inválido.');
             $db->prepare('UPDATE tasks SET status=? WHERE id=? AND user_id=? AND status=?')->execute([$from==='Pendente'?'Em andamento':'Concluída',$id,$user,$from]);
         } else { throw new DomainException('Operação inválida.'); }
-        $_SESSION['notice']='Agenda atualizada.'; redirect();
+        $_SESSION['notice']='Agenda atualizada.'; redirect(field('view')==='board'?'?view=board':'');
     } catch (DomainException $e) { $error=$e->getMessage(); }
 }
 function fields(string $action): void { ?>
@@ -62,6 +62,9 @@ $deadlines=array_count_values(array_map(fn($t)=>urgency($t,$today),$all));
 $filter=(string)($_GET['filter']??''); $query=trim((string)($_GET['q']??''));
 $visible=array_filter($all,fn($t)=>(!$filter || in_array($filter,[$t['status'],urgency($t,$today)],true)) && (!$query || stripos($t['title'].' '.$t['category'],$query)!==false));
 $name=$user?(rows($db,'SELECT name FROM users WHERE id=?',[$user])[0]['name']??''):'';
+$view=in_array($_GET['view']??'', ['board','week'],true)?$_GET['view']:'list';
+$weekOffset=max(-104,min(104,(int)($_GET['week']??0)));
+$start=(new DateTimeImmutable($today))->modify('monday this week')->modify(sprintf('%+d weeks',$weekOffset));
 $notice=$_SESSION['notice']??'';unset($_SESSION['notice']);
 $form=$error && isset($_POST['title'])?$_POST:($task??[]);
 ?>
@@ -79,6 +82,7 @@ $form=$error && isset($_POST['title'])?$_POST:($task??[]);
 <label>Prazo<input type="date" required name="due" value="<?=h($form['due']??$today)?>"></label><div class="pair"><label>Prioridade<select name="priority"><?php options($priorities,$form['priority']??'Média');?></select></label><label>Status<select name="status"><?php options($statuses,$form['status']??'Pendente');?></select></label></div><button>Salvar tarefa</button></form>
 <?php else:?><div class="title"><div><span class="eyebrow"><?=brDate($today)?></span><h1>Minha agenda</h1></div><a class="button" href="?page=new">+ Nova tarefa</a></div>
 <div class="stats"><div><small>Total de tarefas</small><strong><?=count($all)?></strong></div><?php foreach($statuses as $s):?><div><small><?=$s?></small><strong><?=$counts[$s]??0?></strong></div><?php endforeach;?></div>
-<?php require dirname(__DIR__).'/src/chat-view.php'; ?><section class="card"><h2>Entregas por prazo</h2><div class="chips"><?php foreach(['Atrasada'=>'Atrasadas','Vence hoje'=>'Vencem hoje','Próxima'=>'Próximas'] as $k=>$l):?><a href="?filter=<?=urlencode($k)?>"><?=$l?> · <?=$deadlines[$k]??0?></a><?php endforeach;?></div>
+<div class="workspace"><section class="planner"><nav class="views" aria-label="Visualização da agenda"><?php foreach(['list'=>'Lista','week'=>'Semana','board'=>'Quadro'] as $key=>$caption):?><a href="?view=<?=$key?>" aria-current="<?=$view===$key?'page':'false'?>"><?=$caption?></a><?php endforeach;?></nav>
+<?php if($view==='list'):?><section class="card"><h2>Entregas por prazo</h2><div class="chips"><?php foreach(['Atrasada'=>'Atrasadas','Vence hoje'=>'Vencem hoje','Próxima'=>'Próximas'] as $k=>$l):?><a href="?filter=<?=urlencode($k)?>"><?=$l?> · <?=$deadlines[$k]??0?></a><?php endforeach;?></div>
 <form class="filters" method="get"><label>Pesquisar<input name="q" placeholder="Título ou disciplina" value="<?=h($query)?>"></label><label>Exibir<select name="filter"><option value="">Todas as tarefas</option><?php options([...$statuses,'Atrasada','Vence hoje','Próxima'],$filter);?></select></label><button>Filtrar</button><a href="./">Limpar</a></form>
-<?php if(!$visible):?><p><?=$all?'Nenhuma tarefa corresponde ao filtro.':'Sua agenda está vazia. Cadastre sua primeira entrega em “Nova tarefa”.'?></p><?php endif;foreach($visible as $t):?><article><div><small><?=h($t['category'])?> · Prioridade <?=h($t['priority'])?></small><h3><a href="?page=edit&amp;id=<?=$t['id']?>"><?=h($t['title'])?></a></h3><p><?=brDate($t['due'])?> · <?=urgency($t,$today)?><?=$t['status']==='Concluída'?'':' · '.$t['status']?></p></div><div class="actions"><?php if($t['status']!=='Concluída'):?><form method="post" action="?id=<?=$t['id']?>"><?php fields('advance');?><input type="hidden" name="from" value="<?=$t['status']?>"><button><?=$t['status']==='Pendente'?'Iniciar':'Concluir'?></button></form><?php endif;?><a href="?page=delete&amp;id=<?=$t['id']?>">Excluir</a></div></article><?php endforeach;?></section><?php endif;?></main></body></html>
+<?php if(!$visible):?><p><?=$all?'Nenhuma tarefa corresponde ao filtro.':'Sua agenda está vazia. Cadastre sua primeira entrega em “Nova tarefa”.'?></p><?php endif;foreach($visible as $t):?><article><div><small><?=h($t['category'])?> · Prioridade <?=h($t['priority'])?></small><h3><a href="?page=edit&amp;id=<?=$t['id']?>"><?=h($t['title'])?></a></h3><p><?=brDate($t['due'])?> · <?=urgency($t,$today)?><?=$t['status']==='Concluída'?'':' · '.$t['status']?></p></div><div class="actions"><?php if($t['status']!=='Concluída'):?><form method="post" action="?id=<?=$t['id']?>"><?php fields('advance');?><input type="hidden" name="from" value="<?=$t['status']?>"><button><?=$t['status']==='Pendente'?'Iniciar':'Concluir'?></button></form><?php endif;?><a href="?page=delete&amp;id=<?=$t['id']?>">Excluir</a></div></article><?php endforeach;?></section><?php else: require dirname(__DIR__).'/src/planner.php'; endif;?></section><aside><?php require dirname(__DIR__).'/src/chat-view.php';?></aside></div><?php endif;?></main></body></html>

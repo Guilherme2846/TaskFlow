@@ -4,21 +4,27 @@ declare(strict_types=1);
 // Classificador Naive Bayes multinomial com suavização de Laplace.
 function classifyQuestion(string $question): string {
     $examples = [
-        'plan' => 'por onde começar qual tarefa fazer primeiro organizar meu dia plano de estudo priorizar atividades próximas prioridades tenho pouco tempo focar',
-        'late' => 'atrasadas atrasada atrasado atrasados quais tarefas venceram prazo vencido perdi pendências vencidas atraso',
-        'today' => 'quais vencem hoje vence hoje entrega hoje preciso entregar hoje para hoje',
-        'done' => 'concluídas concluída terminei concluí finalizadas entregues finalizado histórico progresso completas'
+        'plan' => 'começar organizar priorizar primeiro plano prioridades focar começar começar organizar',
+        'late' => 'atrasadas atrasada atrasado atrasados venceram vencido vencida vencidas vencidos atraso atrasos',
+        'today' => 'hoje',
+        'tomorrow' => 'amanhã amanha',
+        'week' => 'semana semanal sete semana',
+        'pending' => 'pendentes pendente falta faltam abertas abertos andamento',
+        'done' => 'concluídas concluída concluído concluídos terminei concluí finalizadas entregues finalizado histórico progresso completas'
     ];
     $tokenize = static function(string $s): array {
-        $plain = strtolower((string)iconv('UTF-8','ASCII//TRANSLIT//IGNORE',$s));
+        $plain = strtolower(strtr($s, ['á'=>'a','à'=>'a','ã'=>'a','â'=>'a','ä'=>'a','Á'=>'a','À'=>'a','Ã'=>'a','Â'=>'a','Ä'=>'a','é'=>'e','ê'=>'e','É'=>'e','Ê'=>'e','í'=>'i','Í'=>'i','ó'=>'o','ô'=>'o','õ'=>'o','Ó'=>'o','Ô'=>'o','Õ'=>'o','ú'=>'u','ü'=>'u','Ú'=>'u','Ü'=>'u','ç'=>'c','Ç'=>'c']));
         return preg_split('/[^a-z0-9]+/', $plain, -1, PREG_SPLIT_NO_EMPTY);
     };
+    $tokens = $tokenize($question);
+    // Quando a pergunta pede orientação, a data de hoje fornece contexto.
+    if (in_array('hoje',$tokens,true) && array_intersect($tokens, ['comecar','priorizar','primeiro'])) return 'plan';
     $vocabulary = [];
     foreach ($examples as $intent => $sample) {
         $counts[$intent] = array_count_values($tokenize($sample));
         $vocabulary += $counts[$intent];
     }
-    $words = array_values(array_intersect($tokenize($question),array_keys($vocabulary)));
+    $words = array_values(array_intersect($tokens,array_keys($vocabulary)));
     if (!$words) return 'unknown';
     foreach ($counts as $intent => $freq) {
         $denominator = array_sum($freq) + count($vocabulary);
@@ -31,16 +37,22 @@ function classifyQuestion(string $question): string {
 
 function localAnswer(array $tasks,string $question,string $today): string {
     $intent=classifyQuestion($question);
-    if ($intent==='unknown') return 'Consigo consultar atrasos, entregas de hoje, tarefas concluídas ou sugerir por onde começar. Qual dessas opções você quer ver?';
+    if ($intent==='unknown') return 'Posso consultar seus atrasos, hoje, amanhã, próximos sete dias, tarefas abertas e concluídas, ou sugerir por onde começar. Qual dessas opções você quer ver?';
+    $date = new DateTimeImmutable($today);
+    $tomorrow = $date->modify('+1 day')->format('Y-m-d');
+    $lastDay = $date->modify('+6 days')->format('Y-m-d');
     $matches=array_filter($tasks,static fn($t)=>match($intent){
         'done'=>$t['status']==='Concluída',
         'today'=>$t['status']!=='Concluída' && $t['due']===$today,
+        'tomorrow'=>$t['status']!=='Concluída' && $t['due']===$tomorrow,
+        'week'=>$t['status']!=='Concluída' && $t['due']>=$today && $t['due']<=$lastDay,
         'late'=>$t['status']!=='Concluída' && $t['due']<$today,
         default=>$t['status']!=='Concluída'
     });
-    $labels=['done'=>'Tarefas concluídas','today'=>'Entregas de hoje','late'=>'Entregas atrasadas','plan'=>'Plano por ordem de prazo'];
+    $labels=['pending'=>'Tarefas em aberto','week'=>'Próximos sete dias','tomorrow'=>'Entregas de amanhã','done'=>'Tarefas concluídas','today'=>'Entregas de hoje','late'=>'Entregas atrasadas','plan'=>'Plano por ordem de prazo'];
     $lines=[$labels[$intent].' · '.count($matches).' tarefa(s)'];
     foreach(array_slice($matches,0,5) as $t) $lines[]='• '.$t['title'].' — '.brDate($t['due']).' · prioridade '.$t['priority'];
+    if (count($matches)>5) $lines[]='Exibindo as primeiras cinco.';
     if (!$matches) $lines[]='Sua agenda não tem tarefas nessa situação.';
     elseif ($intent==='plan') $lines[]='Comece pela primeira da lista. Em caso de prazos iguais, a prioridade mais alta vem primeiro.';
     return implode("\n",$lines);

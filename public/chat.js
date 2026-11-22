@@ -1,9 +1,14 @@
 const form = document.querySelector('#study-chat');
 if (form) {
   const answer = document.querySelector('#chat-answer');
+  form.querySelectorAll('[data-prompt]').forEach(chip => chip.addEventListener('click', () => {
+    if (form.querySelector('[type=submit]').disabled) return;
+    form.elements.question.value = chip.dataset.prompt;
+    form.requestSubmit();
+  }));
   form.addEventListener('submit', async event => {
     event.preventDefault();
-    const button = form.querySelector('button');
+    const button = form.querySelector('[type=submit]');
     const data = new FormData(form);
     button.disabled = true;
     answer.textContent = 'Consultando sua agenda…';
