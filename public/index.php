@@ -12,6 +12,9 @@ $id=(int)($_GET['id']??0);
 $statuses=['Pendente','Em andamento','Concluída'];
 $priorities=['Alta','Média','Baixa'];
 $today=date('Y-m-d');
+require dirname(__DIR__).'/src/study.php';
+$expires=$user?trial($db,$user):null;
+$premium=$expires!==null && $expires>$today;
 $error='';
 $task=$id && $user ? (rows($db,'SELECT * FROM tasks WHERE id=? AND user_id=?',[$id,$user])[0]??null) : null;
 if ($_SERVER['REQUEST_METHOD']==='POST') {
@@ -24,6 +27,19 @@ if ($_SERVER['REQUEST_METHOD']==='POST') {
             redirect();
         }
         if ($action==='logout') { $_SESSION=[]; session_destroy(); redirect(); }
+        if ($action==='trial') {
+            $ends=(new DateTimeImmutable($today))->modify('+7 days')->format('Y-m-d');
+            $db->prepare('INSERT INTO trials(user_id,expires) VALUES(?,?) ON CONFLICT(user_id) DO NOTHING')->execute([$user,$ends]);
+            redirect('?page=study');
+        }
+        if ($action==='study') {
+            recordStudy($db,$user,$premium);
+            $_SESSION['notice']='Sessão registrada.';
+            $week=(new DateTimeImmutable(field('studied')))->modify('monday this week');
+            $current=(new DateTimeImmutable($today))->modify('monday this week');
+            $offset=intdiv((int)$current->diff($week)->format('%r%a'),7);
+            redirect('?page=study&week='.$offset);
+        }
         if ($action==='create' || $action==='edit') {
             $title=field('title'); $description=field('description'); $category=field('category');
             guard($title!=='' && strlen($title)<=480,'Informe um título de até 120 caracteres.');
@@ -63,19 +79,20 @@ $filter=(string)($_GET['filter']??''); $query=trim((string)($_GET['q']??''));
 $visible=array_filter($all,fn($t)=>(!$filter || in_array($filter,[$t['status'],urgency($t,$today)],true)) && (!$query || stripos($t['title'].' '.$t['category'],$query)!==false));
 $name=$user?(rows($db,'SELECT name FROM users WHERE id=?',[$user])[0]['name']??''):'';
 $view=in_array($_GET['view']??'', ['board','week'],true)?$_GET['view']:'list';
-$weekOffset=max(-104,min(104,(int)($_GET['week']??0)));
+$range=$page==='study'?520000:104;
+$weekOffset=max(-$range,min($range,(int)($_GET['week']??0)));
 $start=(new DateTimeImmutable($today))->modify('monday this week')->modify(sprintf('%+d weeks',$weekOffset));
 $notice=$_SESSION['notice']??'';unset($_SESSION['notice']);
 $form=$error && isset($_POST['title'])?$_POST:($task??[]);
 ?>
 <!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>TaskFlow · Agenda acadêmica</title><link rel="stylesheet" href="style.css"><link rel="stylesheet" href="agenda.css"></head><body>
-<header><div class="wrap bar"><a class="brand" href="./"><i>✓</i>TaskFlow</a><?php if($user):?><div class="account"><?=h($name)?><form method="post"><?php fields('logout');?><button class="light">Sair</button></form></div><?php endif;?></div></header>
+<header><div class="wrap bar"><a class="brand" href="./"><i>✓</i>TaskFlow</a><?php if($user):?><div class="account"><a class="top-link" href="?page=plans"><?=$premium?'Meu Plus':'Planos'?></a><a class="top-link" href="?page=study">Estudos</a><span><?=h($name)?></span><form method="post"><?php fields('logout');?><button class="light">Sair</button></form></div><?php endif;?></div></header>
 <main class="wrap"><?php if($error):?><p class="error" role="alert"><?=h($error)?></p><?php endif;if($notice):?><p class="notice" role="status"><?=h($notice)?></p><?php endif;?>
 <?php if(!$user): $signup=$page==='signup';?>
 <section class="login"><div class="intro"><span class="eyebrow">Agenda acadêmica</span><h1>O que vence primeiro?</h1><p>Organize trabalhos, provas e leituras por disciplina. Acompanhe suas entregas desde o primeiro rascunho até a conclusão.</p></div><form class="card stack" method="post"><?php fields($signup?'signup':'login');?><h2><?=$signup?'Criar minha conta':'Acessar minha agenda'?></h2>
 <?php if($signup):?><label>Nome<input name="name" required autocomplete="name"></label><?php endif;?>
 <label>E-mail<input type="email" name="email" required autocomplete="email"></label><label>Senha <?=$signup?'(mínimo de 8 caracteres)':''?><input type="password" name="password" required autocomplete="<?=$signup?'new-password':'current-password'?>"></label><button><?=$signup?'Criar conta':'Entrar'?></button><a href="<?=$signup?'./':'?page=signup'?>"><?=$signup?'Já tenho conta':'Criar uma conta'?></a></form></section>
-<?php elseif(in_array($page,['edit','delete'],true) && !$task): http_response_code(404);?><h1>Tarefa indisponível</h1><a href="./">Voltar à agenda</a>
+<?php elseif($page==='plans'): require dirname(__DIR__).'/src/plans-view.php'; elseif($page==='study'): require dirname(__DIR__).'/src/study-view.php'; elseif(in_array($page,['edit','delete'],true) && !$task): http_response_code(404);?><h1>Tarefa indisponível</h1><a href="./">Voltar à agenda</a>
 <?php elseif($page==='delete'):?><section class="card narrow"><h1>Excluir tarefa?</h1><p><?=h($task['title'])?></p><form method="post"><?php fields('delete');?><button>Confirmar exclusão</button> <a href="./">Cancelar</a></form></section>
 <?php elseif($page==='new'||$page==='edit'):?><a href="./">← Minha agenda</a><h1><?=$page==='edit'?'Editar tarefa':'Nova tarefa'?></h1><form class="card stack narrow" method="post"><?php fields($page==='edit'?'edit':'create');?>
 <label>Título<input name="title" maxlength="120" required value="<?=h($form['title']??'')?>"></label><label>Disciplina ou categoria<input name="category" maxlength="60" required value="<?=h($form['category']??'')?>"></label><label>Descrição<textarea name="description" maxlength="2000"><?=h($form['description']??'')?></textarea></label>

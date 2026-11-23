@@ -20,6 +20,14 @@ function database(): PDO {
         title TEXT NOT NULL, description TEXT NOT NULL, category TEXT NOT NULL,
         due TEXT NOT NULL, priority TEXT NOT NULL, status TEXT NOT NULL
     )');
+    $db->exec('CREATE TABLE IF NOT EXISTS trials (
+        user_id INTEGER PRIMARY KEY REFERENCES users(id), expires TEXT NOT NULL
+    );
+    CREATE TABLE IF NOT EXISTS study_log (
+        id INTEGER PRIMARY KEY, user_id INTEGER NOT NULL REFERENCES users(id), request TEXT NOT NULL,
+        title TEXT NOT NULL, category TEXT NOT NULL, studied TEXT NOT NULL, minutes INTEGER NOT NULL CHECK(minutes BETWEEN 1 AND 480),
+        UNIQUE(user_id,request)
+    )');
     return $db;
 }
 

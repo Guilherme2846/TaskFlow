@@ -43,7 +43,7 @@ Antes da aula, cadastrem uma leitura com prazo de ontem e uma prova com prazo fu
 
 O ChatGPT com Codex apoiou o planejamento, a programação, os testes e a documentação. Um exemplo concreto foi testar uma tarefa que vence hoje antes e depois de concluída. Ela permanece na agenda e deixa de contar como urgente. Essa regra pode ser conferida na função `urgency` e demonstrada ao vivo.
 
-A proposta comercial é hospedar uma única aplicação com contas individuais. Uma hipótese é oferecer gratuitamente a agenda básica e cobrar R$ 9,90 por mês por lembretes e tarefas recorrentes. O preço é uma proposta acadêmica. Cobrança e recursos premium são próximos passos.
+A proposta comercial é hospedar uma única aplicação com contas individuais. Uma hipótese é oferecer gratuitamente a agenda básica e cobrar R$ 9,90 por mês por sessões de estudo e relatório semanal por disciplina. O preço é uma proposta acadêmica. O Plus pode ser experimentado por sete dias por conta. A cobrança recorrente é um próximo passo.
 
 
 ## Assistente de estudos e API
@@ -61,3 +61,7 @@ A aba **Semana** organiza as entregas de segunda a domingo, permite consultar se
 No assistente, selecione a disciplina ou consulte todas. As sugestões de pergunta executam a consulta. A semana no assistente cobre hoje e os seis dias seguintes. A aba Semana mostra a semana de calendário.
 
 Referências de produto: [visualização Em breve do Todoist](https://www.todoist.com/pt-BR/help/todoist/get-started/plan-your-week-with-the-upcoming-view-OKOg1mR8) e [quadros Kanban do Asana](https://help.asana.com/s/article/asana-kanban-boards).
+
+## Demonstração dos planos
+
+Em Planos, ative o teste do Plus. Abra Estudos, selecione uma tarefa e registre 25 minutos. Confira a soma semanal por disciplina. O teste começa uma única vez por conta, vale por sete datas consecutivas e preserva o histórico para consulta após expirar. A versão acadêmica não processa pagamentos.
