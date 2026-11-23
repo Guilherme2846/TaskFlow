@@ -31,7 +31,7 @@ $peak=max(1,max($loads));?>
 <?php foreach($items as $item):?><section class="ticket"><small><?=$view==='week'?'Entrega · ':''?><?=h($item['category'])?></small>
 <h4><a href="?page=edit&amp;id=<?=$item['id']?>"><?=h($item['title'])?></a></h4>
 <p><?=h($item['priority'])?> · <?=brDate($item['due'])?> · <?=h($item['status'])?></p>
-<a class="edit-link" href="?page=edit&amp;id=<?=$item['id']?>">Editar</a>
+<a href="?page=tutor&amp;id=<?=$item['id']?>">Tutor IA</a> · <a class="edit-link" href="?page=edit&amp;id=<?=$item['id']?>">Editar</a>
 <?php if($view==='board' && $item['status']!=='Concluída'):?>
 <form method="post" action="?id=<?=$item['id']?>"><?php fields('advance');?><input type="hidden" name="view" value="board"><input type="hidden" name="from" value="<?=h($item['status'])?>"><button><?=$item['status']==='Pendente'?'Iniciar':'Concluir'?></button></form>
 <?php endif;?></section><?php endforeach;?></section>
