@@ -27,3 +27,9 @@ button,.button,.actions button,.ticket button{background:var(--green);color:whit
  .app-nav a{text-align:center;padding:8px 3px;font-size:13px;white-space:normal}
  .title{flex-wrap:wrap;gap:8px}.week-overview>div,.week-head,.load-chart{min-width:0}
 }
+
+.priority-guide{display:flex;align-items:center;flex-wrap:wrap;gap:6px 9px;margin:12px 0}
+.priority-guide small{flex-basis:100%}
+.priority-badge{display:inline-block;width:fit-content;padding:2px 7px;border-radius:6px;font-size:12px;font-weight:700;line-height:1.5}
+.priority-1{color:#852916;background:#ffebe1}.priority-2{color:#674800;background:#fff2c0}.priority-3{color:#29516d;background:#e5f0f7}
+.ticket .priority-badge{display:block;margin-bottom:5px}

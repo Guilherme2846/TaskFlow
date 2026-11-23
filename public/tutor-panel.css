@@ -20,3 +20,5 @@ body.signed{padding-bottom:65px}
 .deadline-note{padding:14px 0;border-bottom:1px solid #dae4df;margin-bottom:10px}
 .deadline-note p{margin:5px 0 8px}
 #panel-conversation:not([hidden]){display:flex;flex-direction:column;flex:1;min-height:0}
+
+.deadline-summary{margin:12px 0 16px;padding:12px;background:#fff6df;border-radius:8px;color:#513d18}.deadline-summary h3,#panel-alerts>h3{margin:0;font-size:1rem}.deadline-summary p{margin:8px 0 0}
