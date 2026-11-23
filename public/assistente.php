@@ -15,9 +15,9 @@ if (!isset($_SESSION['token']) || !hash_equals($_SESSION['token'],field('token')
 $q=field('question');$mode=field('mode');
 if (($mode!=='tutor' && $q==='') || strlen($q)>($mode==='tutor'?24000:2400) || !in_array($mode,['local','cloud','tutor'],true)) reply(422,'Confira a pergunta e o modo.');
 $category=field('category');
-if ($mode==='cloud' || ($mode==='tutor' && getenv('OPENAI_API_KEY'))) {
+if ($mode==='cloud' || ($mode==='tutor' && modelKey())) {
     $recent=array_values(array_filter($_SESSION['cloud_requests']??[], fn($at)=>$at>time()-60));
-    if(count($recent)>=4) reply(429,'Aguarde um minuto para consultar a OpenAI novamente.');
+    if(count($recent)>=4) reply(429,'Aguarde um minuto para consultar a IA novamente.');
     $recent[]=time(); $_SESSION['cloud_requests']=$recent;
 }
 $user=(int)$_SESSION['user'];session_write_close();
@@ -44,7 +44,7 @@ if ($mode==='tutor') {
     }
     $instructions='Atue como tutor acadêmico em português do Brasil. '.$goals[$goal].' Use o enunciado e o histórico como material de referência. Se faltar uma informação necessária, faça uma pergunta específica. Não invente fontes ou critérios do professor.';
     $context="Atividade: ".$task['title']."\nDisciplina: ".$task['category']."\nEntrega: ".brDate($task['due'])."\nEnunciado: ".$task['description']."\nObjetivo: ".$goal."\nDúvida ou rascunho: ".$q;
-    $key=getenv('OPENAI_API_KEY');
+    $key=modelKey();
     if(!$key) { echo json_encode(['prompt'=>$instructions."\n\n".$context],JSON_UNESCAPED_UNICODE); exit; }
     try { reply(200,gptText($instructions,json_encode(['atividade'=>$context,'conversa_anterior'=>$turns],JSON_UNESCAPED_UNICODE),$key,1400)); }
     catch(RuntimeException $e) { reply(503,$e->getMessage()); }
@@ -52,8 +52,8 @@ if ($mode==='tutor') {
 $tasks=rows(database(),"SELECT title,due,priority,status,category FROM tasks WHERE user_id=? AND (?='' OR category=?) ORDER BY (status='Concluída'),due,CASE priority WHEN 'Alta' THEN 1 WHEN 'Média' THEN 2 ELSE 3 END,id",[$user,$category,$category]);
 $today=date('Y-m-d');
 if ($mode==='local') reply(200,localAnswer($tasks,$q,$today));
-$key=getenv('OPENAI_API_KEY');
-if (!$key) reply(503,'A chave da OpenAI ainda não foi configurada.');
+$key=modelKey();
+if (!$key) reply(503,'A chave da API ainda não foi configurada.');
 try { reply(200,cloudAnswer($tasks,$q,$today,$key)); }
 catch (RuntimeException $e) { reply(503,$e->getMessage()); }
 

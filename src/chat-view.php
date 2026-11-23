@@ -3,7 +3,7 @@
 <form class="stack" id="study-chat"><input type="hidden" name="token" value="<?=h($_SESSION['token'])?>">
 <div class="prompts"><?php foreach(['Por onde começar hoje?','O que vence amanhã?','Próximos sete dias','Quais tarefas estão atrasadas?'] as $prompt):?><button type="button" data-prompt="<?=h($prompt)?>"><?=h($prompt)?></button><?php endforeach;?></div>
 <label>Sua pergunta<input required maxlength="600" name="question" placeholder="Por onde começar hoje?"></label>
-<details class="filter-fold"><summary>Disciplina e modo de resposta</summary><label>Como consultar<select name="mode"><option value="local">IA local · sem internet</option><option value="cloud" <?=getenv('OPENAI_API_KEY')?'':'disabled'?>>OpenAI · <?=getenv('OPENAI_API_KEY')?'enviar pergunta e até 50 tarefas':'chave não configurada'?></option></select></label>
+<details class="filter-fold"><summary>Disciplina e modo de resposta</summary><label>Como consultar<select name="mode"><option value="local">Resumo local · sem internet</option><option value="cloud" <?=modelKey()?'':'disabled'?>><?=modelProvider()?> · <?=modelKey()?'enviar pergunta e até 50 tarefas':'chave não configurada'?></option></select></label>
 <label>Disciplina<select name="category"><option value="">Todas as disciplinas</option><?php $categories=array_unique(array_column($all,'category'));sort($categories);options($categories,'');?></select></label>
 </details><button type="submit">Consultar agenda</button></form><p id="chat-answer" style="white-space:pre-line" aria-live="polite"></p></section>
 <script src="chat.js" defer></script>

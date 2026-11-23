@@ -85,3 +85,7 @@ Na tarefa, informe os minutos de trabalho restantes. Uma alteração de atividad
 Em Assistente IA, selecione uma atividade e abra o tutor. Em Agenda também há um link Tutor IA ao lado da atividade. O tutor usa título, disciplina, prazo e descrição da atividade selecionada. Cole o enunciado na descrição e escolha roteiro, explicação, revisão de rascunho ou ensaio oral. A revisão precisa de um texto do aluno. Com a API configurada, o GPT recebe até quatro trocas anteriores da página atual para dar continuidade à conversa.
 
 Para usar o GPT integrado no Windows, encerre o servidor PHP atual com Ctrl+C. No PowerShell da pasta do projeto execute `.\Iniciar-Com-GPT.ps1` e informe uma chave de API da OpenAI com acesso ao modelo. O campo é oculto e a chave fica no ambiente do servidor durante sua execução. O padrão é gpt-4.1-mini, ajustável por OPENAI_MODEL. Sem chave, o tutor gera a pergunta contextualizada e o aluno pode copiá-la ao ChatGPT; a geração da resposta acontece no chat externo. A IA local de organização continua disponível na mesma aba.
+
+### Tutor com API gratuita
+
+Crie uma chave em https://openrouter.ai/settings/keys e rode `.\Iniciar-Com-IA-Gratis.ps1` na pasta do projeto pelo PowerShell, após parar o servidor anterior. Digite a chave no terminal. Em **Assistente IA**, escolha a atividade e abra o tutor. O servidor usa `openrouter/free`, sujeito à disponibilidade e às cotas do serviço. Se ambas as chaves estiverem configuradas, OpenRouter tem preferência.

@@ -64,13 +64,16 @@ function cloudAnswer(array $tasks,string $question,string $today,string $key): s
 }
 
 function gptText(string $instructions,string $input,string $key,int $budget): string {
-    if (!function_exists('curl_init')) throw new RuntimeException('Habilite cURL no PHP para usar a OpenAI.');
-    $ch=curl_init('https://api.openai.com/v1/responses');
-    $body=['model'=>getenv('OPENAI_MODEL') ?: 'gpt-4.1-mini','store'=>false,'max_output_tokens'=>$budget,'instructions'=>$instructions,'input'=>$input];
+    if (!function_exists('curl_init')) throw new RuntimeException('Habilite cURL no PHP para consultar a IA.');
+    $free=modelProvider()==='OpenRouter';
+    $ch=curl_init($free ? 'https://openrouter.ai/api/v1/responses' : 'https://api.openai.com/v1/responses');
+    $body=['model'=>$free ? 'openrouter/free' : (getenv('OPENAI_MODEL') ?: 'gpt-4.1-mini'),'store'=>false,'max_output_tokens'=>$budget,'instructions'=>$instructions,'input'=>$input];
     curl_setopt_array($ch,[CURLOPT_POST=>true,CURLOPT_RETURNTRANSFER=>true,CURLOPT_CONNECTTIMEOUT=>5,CURLOPT_TIMEOUT=>25,
         CURLOPT_HTTPHEADER=>['Content-Type: application/json','Authorization: Bearer '.$key],CURLOPT_POSTFIELDS=>json_encode($body)]);
     $raw=curl_exec($ch); $status=curl_getinfo($ch,CURLINFO_RESPONSE_CODE); curl_close($ch);
-    if ($status!==200 || !$raw) throw new RuntimeException('A OpenAI não respondeu. Confira conexão, chave e saldo ou selecione o assistente local.');
+    if ($status===429) throw new RuntimeException('Limite temporário do provedor. Tente novamente mais tarde.');
+    if ($status===401 || $status===403) throw new RuntimeException('O provedor recusou a chave ou o acesso ao modelo.');
+    if ($status!==200 || !$raw) throw new RuntimeException('O provedor não respondeu. Confira a conexão e tente de novo.');
     $text=[];
     foreach ((json_decode($raw,true)['output']??[]) as $item)
         foreach (($item['content']??[]) as $part)

@@ -90,4 +90,10 @@ function h(string $s): string { return htmlspecialchars($s, ENT_QUOTES | ENT_SUB
 function num(float $v, int $digits = 2): string { return number_format($v, $digits, ',', '.'); }
 function brDate(string $iso): string { return implode('/', array_reverse(explode('-', $iso))); }
 
+function modelKey(): string {
+    return getenv('OPENROUTER_API_KEY') ?: (getenv('OPENAI_API_KEY') ?: '');
+}
 
+function modelProvider(): string {
+    return getenv('OPENROUTER_API_KEY') ? 'OpenRouter' : 'OpenAI';
+}
