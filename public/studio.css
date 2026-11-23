@@ -33,3 +33,10 @@ button,.button,.actions button,.ticket button{background:var(--green);color:whit
 .priority-badge{display:inline-block;width:fit-content;padding:2px 7px;border-radius:6px;font-size:12px;font-weight:700;line-height:1.5}
 .priority-1{color:#852916;background:#ffebe1}.priority-2{color:#674800;background:#fff2c0}.priority-3{color:#29516d;background:#e5f0f7}
 .ticket .priority-badge{display:block;margin-bottom:5px}
+
+.plan-comparison{margin-top:18px}
+.plan-comparison table{width:100%;border-collapse:collapse}
+.plan-comparison th,.plan-comparison td{padding:10px 6px;text-align:center;border-bottom:1px solid var(--line)}
+.plan-comparison th:first-child{text-align:left}
+.plan-comparison tbody th{font-weight:500}
+.plan-comparison thead{background:#edf4ec}
