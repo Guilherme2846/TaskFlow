@@ -69,3 +69,7 @@ Em Planos, ative o teste do Plus. Abra Estudos, selecione uma tarefa e registre 
 ## Simular um cronograma
 
 Na agenda vazia, **Carregar exemplos** cria quatro tarefas fictícias com prazos relativos ao dia da demonstração. Em **Planejar**, selecione Preparar seminário, estime 120 minutos e informe 40 minutos disponíveis por dia. A prévia distribui o trabalho em três blocos. Escolha **Salvar na semana** para incluí-los no calendário. O cálculo considera as reservas de outras entregas e pode excluir fins de semana. Se faltar tempo, a prévia informa o déficit. Esse planejamento faz parte do gratuito; o Plus registra o tempo efetivamente estudado. O cronograma usa regras de capacidade e prazo. A IA local continua responsável pelas perguntas sobre a agenda.
+
+## Navegação
+
+Hoje destaca a entrega mais urgente e os blocos de estudo reservados para a data. Agenda contém lista, semana e quadro. Planejar distribui o esforço até o prazo. Tempo de estudo registra os minutos realizados no Plus. Assistente IA abre as perguntas e permite selecionar disciplina e modo de resposta.
