@@ -65,3 +65,7 @@ Referências de produto: [visualização Em breve do Todoist](https://www.todois
 ## Demonstração dos planos
 
 Em Planos, ative o teste do Plus. Abra Estudos, selecione uma tarefa e registre 25 minutos. Confira a soma semanal por disciplina. O teste começa uma única vez por conta, vale por sete datas consecutivas e preserva o histórico para consulta após expirar. A versão acadêmica não processa pagamentos.
+
+## Simular um cronograma
+
+Na agenda vazia, **Carregar exemplos** cria quatro tarefas fictícias com prazos relativos ao dia da demonstração. Em **Planejar**, selecione Preparar seminário, estime 120 minutos e informe 40 minutos disponíveis por dia. A prévia distribui o trabalho em três blocos. Escolha **Salvar na semana** para incluí-los no calendário. O cálculo considera as reservas de outras entregas e pode excluir fins de semana. Se faltar tempo, a prévia informa o déficit. Esse planejamento faz parte do gratuito; o Plus registra o tempo efetivamente estudado. O cronograma usa regras de capacidade e prazo. A IA local continua responsável pelas perguntas sobre a agenda.

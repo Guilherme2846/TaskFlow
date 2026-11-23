@@ -28,6 +28,10 @@ function database(): PDO {
         title TEXT NOT NULL, category TEXT NOT NULL, studied TEXT NOT NULL, minutes INTEGER NOT NULL CHECK(minutes BETWEEN 1 AND 480),
         UNIQUE(user_id,request)
     )');
+    $db->exec('CREATE TABLE IF NOT EXISTS study_blocks (
+        task_id INTEGER NOT NULL REFERENCES tasks(id) ON DELETE CASCADE,
+        day TEXT NOT NULL, minutes INTEGER NOT NULL CHECK(minutes>0), PRIMARY KEY(task_id,day)
+    )');
     return $db;
 }
 
