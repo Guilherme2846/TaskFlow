@@ -73,3 +73,9 @@ Na agenda vazia, **Carregar exemplos** cria quatro tarefas fictícias com prazos
 ## Navegação
 
 Hoje destaca a entrega mais urgente e os blocos de estudo reservados para a data. Agenda contém lista, semana e quadro. Planejar distribui o esforço até o prazo. Tempo de estudo registra os minutos realizados no Plus. Assistente IA abre as perguntas e permite selecionar disciplina e modo de resposta.
+
+## Distribuição automática de minutos
+
+Em Planejar → Configurar disponibilidade, salve os minutos por dia útil, sábado e domingo. Zero indica folga. Uma data personalizada substitui o padrão apenas naquele dia. Ao ativar, os blocos manuais de hoje em diante nas tarefas abertas viram a estimativa inicial, salvo quando já existe uma estimativa informada.
+
+Na tarefa, informe os minutos de trabalho restantes. Uma alteração de atividade ou rotina refaz o plano futuro da conta. As reservas começam hoje e terminam até a entrega. Havendo disputa, a prioridade alta recebe tempo antes da média e da baixa. Dentro de cada nível, vence o prazo mais próximo. Quando tudo cabe, o sistema preserva a capacidade necessária para tarefas com prazo curto. O aviso informa os minutos sem encaixe ou sinaliza quando a última sessão cai no dia da entrega. Tempo registrado em Estudos reduz a estimativa; quem usa o gratuito pode ajustá-la ao editar a tarefa.

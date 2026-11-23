@@ -14,11 +14,19 @@ $priorities=['Alta','Média','Baixa'];
 $today=date('Y-m-d');
 require dirname(__DIR__).'/src/study.php';
 require dirname(__DIR__).'/src/schedule.php';
+require dirname(__DIR__).'/src/availability.php';
+$cfg=$user?availability($db,$user):null;
+if($cfg && $cfg['last_day']!==$today) {
+    $db->exec('BEGIN IMMEDIATE');
+    try { refreshBlocks($db,$user,$today);$db->exec('COMMIT'); }
+    catch(Throwable $e) { $db->exec('ROLLBACK');throw $e; }
+}
 $expires=$user?trial($db,$user):null;
 $premium=$expires!==null && $expires>$today;
 $error='';
 $task=$id && $user ? (rows($db,'SELECT * FROM tasks WHERE id=? AND user_id=?',[$id,$user])[0]??null) : null;
 if ($_SERVER['REQUEST_METHOD']==='POST') {
+    $writing=false;
     try {
         guard(hash_equals($_SESSION['token'],field('token')),'Atualize a página e tente novamente.');
         $action=field('action');
@@ -33,8 +41,18 @@ if ($_SERVER['REQUEST_METHOD']==='POST') {
             $db->prepare('INSERT INTO trials(user_id,expires) VALUES(?,?) ON CONFLICT(user_id) DO NOTHING')->execute([$user,$ends]);
             redirect('?page=study');
         }
+        if(in_array($action,['create','edit','advance','delete','study','routine','date_limit','remove_date'],true)) {
+            $db->exec('BEGIN IMMEDIATE'); $writing=true;
+        }
+        if(in_array($action,['routine','date_limit','remove_date'],true)) {
+            updateAvailability($db,$user,$today,$action);refreshBlocks($db,$user,$today);$db->exec('COMMIT');
+            $_SESSION['notice']='Disponibilidade salva. Todas as entregas foram recalculadas.';redirect('?view=week');
+        }
         if ($action==='study') {
-            recordStudy($db,$user,$premium);
+            if(recordStudy($db,$user,$premium)) {
+                $db->prepare('UPDATE estimates SET minutes=MAX(0,minutes-?) WHERE task_id=?')->execute([(int)field('minutes'),(int)field('task')]);
+            }
+            refreshBlocks($db,$user,$today);$db->exec('COMMIT');
             $_SESSION['notice']='Sessão registrada.';
             $week=(new DateTimeImmutable(field('studied')))->modify('monday this week');
             $current=(new DateTimeImmutable($today))->modify('monday this week');
@@ -43,6 +61,7 @@ if ($_SERVER['REQUEST_METHOD']==='POST') {
         }
         if ($action==='examples') { loadExamples($db,$user,$today); redirect(); }
         if ($action==='schedule') {
+            guard(!availability($db,$user),'O cronograma desta conta é automático. Edite a estimativa da entrega.');
             saveSchedule($db,$user,$today); $_SESSION['notice']='Cronograma salvo na sua semana.'; redirect('?view=week');
         }
         if ($action==='preview') { $preview=buildSchedule($db,$user,$today); }
@@ -58,6 +77,11 @@ if ($_SERVER['REQUEST_METHOD']==='POST') {
             } else {
                 $db->prepare('INSERT INTO tasks(title,description,category,due,priority,status,user_id) VALUES(?,?,?,?,?,?,?)')->execute([...$values,$user]);
             }
+            $target=$action==='create'?(int)$db->lastInsertId():$id;
+            if(isset($_POST['estimate'])) {
+                $minutes=field('estimate')===''?0:validatedMinutes('estimate',60000);
+                $db->prepare('INSERT INTO estimates(task_id,minutes) VALUES(?,?) ON CONFLICT(task_id) DO UPDATE SET minutes=excluded.minutes')->execute([$target,$minutes]);
+            }
         } elseif ($action==='delete') {
             guard((bool)$task,'Tarefa indisponível.');
             $db->prepare('DELETE FROM tasks WHERE id=? AND user_id=?')->execute([$id,$user]);
@@ -66,8 +90,8 @@ if ($_SERVER['REQUEST_METHOD']==='POST') {
             $from=field('from'); guard(in_array($from,array_slice($statuses,0,2),true),'Status inválido.');
             $db->prepare('UPDATE tasks SET status=? WHERE id=? AND user_id=? AND status=?')->execute([$from==='Pendente'?'Em andamento':'Concluída',$id,$user,$from]);
         } else { throw new DomainException('Operação inválida.'); }
-        if ($action!=='preview') { $_SESSION['notice']='Agenda atualizada.'; redirect(field('view')==='board'?'?view=board':''); }
-    } catch (DomainException $e) { $error=$e->getMessage(); }
+        if ($action!=='preview') { refreshBlocks($db,$user,$today);$db->exec('COMMIT'); $_SESSION['notice']='Agenda atualizada.'; redirect(field('view')==='board'?'?view=board':''); }
+    } catch (Throwable $e) { if($writing) $db->exec('ROLLBACK'); if(!($e instanceof DomainException)) throw $e; $error=$e->getMessage(); }
 }
 function fields(string $action): void { ?>
 <input type="hidden" name="token" value="<?=h($_SESSION['token'])?>"><input type="hidden" name="action" value="<?=$action?>">
@@ -97,14 +121,19 @@ $form=$error && isset($_POST['title'])?$_POST:($task??[]);
 if($user): $active=$home?'Hoje':(['schedule'=>'Planejar','study'=>'Tempo de estudo','assistant'=>'Assistente IA','plans'=>'Planos'][$page]??'Agenda'); ?>
 <nav class="app-nav" aria-label="Navegação principal"><div class="wrap"><?php foreach(['Hoje'=>'./','Agenda'=>'?view=list','Planejar'=>'?page=schedule','Tempo de estudo'=>'?page=study','Assistente IA'=>'?page=assistant'] as $label=>$url):?><a href="<?=$url?>" aria-current="<?=$active===$label?'page':'false'?>"><?=$label?></a><?php endforeach;?></div></nav><?php endif;?>
 <main class="wrap"><?php if($error):?><p class="error" role="alert"><?=h($error)?></p><?php endif;if($notice):?><p class="notice" role="status"><?=h($notice)?></p><?php endif;?>
+<?php if($user && $cfg && (!$page || in_array($page,['availability','schedule'],true))):
+$alerts=rows($db,"SELECT t.title,e.warning FROM estimates e JOIN tasks t ON t.id=e.task_id WHERE t.user_id=? AND t.status!='Concluída' AND e.warning!='' ORDER BY t.due,t.id",[$user]);
+if($alerts):?><section class="card"><h2>Atenção aos prazos</h2><?php foreach($alerts as $alert):?><p><strong><?=h($alert['title'])?></strong> · <?=h($alert['warning'])?></p><?php endforeach;?><a href="?page=availability">Ajustar disponibilidade</a></section><?php endif;endif;?>
 <?php if(!$user): $signup=$page==='signup';?>
 <section class="login"><div class="intro"><span class="eyebrow">Agenda acadêmica</span><h1>O que vence primeiro?</h1><p>Organize trabalhos, provas e leituras por disciplina. Acompanhe suas entregas desde o primeiro rascunho até a conclusão.</p></div><form class="card stack" method="post"><?php fields($signup?'signup':'login');?><h2><?=$signup?'Criar minha conta':'Acessar minha agenda'?></h2>
 <?php if($signup):?><label>Nome<input name="name" required autocomplete="name"></label><?php endif;?>
 <label>E-mail<input type="email" name="email" required autocomplete="email"></label><label>Senha <?=$signup?'(mínimo de 8 caracteres)':''?><input type="password" name="password" required autocomplete="<?=$signup?'new-password':'current-password'?>"></label><button><?=$signup?'Criar conta':'Entrar'?></button><a href="<?=$signup?'./':'?page=signup'?>"><?=$signup?'Já tenho conta':'Criar uma conta'?></a></form></section>
-<?php elseif($home): require dirname(__DIR__).'/src/today-view.php'; elseif($page==='assistant'):?><h1>Assistente IA</h1><section class="assistant-page"><?php require dirname(__DIR__).'/src/chat-view.php';?></section><?php elseif($page==='schedule'): require dirname(__DIR__).'/src/schedule-view.php'; elseif($page==='plans'): require dirname(__DIR__).'/src/plans-view.php'; elseif($page==='study'): require dirname(__DIR__).'/src/study-view.php'; elseif(in_array($page,['edit','delete'],true) && !$task): http_response_code(404);?><h1>Tarefa indisponível</h1><a href="./">Voltar à agenda</a>
+<?php elseif($home): require dirname(__DIR__).'/src/today-view.php'; elseif($page==='assistant'):?><h1>Assistente IA</h1><section class="assistant-page"><?php require dirname(__DIR__).'/src/chat-view.php';?></section><?php elseif($page==='availability' || ($page==='schedule' && $cfg)): require dirname(__DIR__).'/src/routine-view.php'; elseif($page==='schedule'): require dirname(__DIR__).'/src/schedule-view.php'; elseif($page==='plans'): require dirname(__DIR__).'/src/plans-view.php'; elseif($page==='study'): require dirname(__DIR__).'/src/study-view.php'; elseif(in_array($page,['edit','delete'],true) && !$task): http_response_code(404);?><h1>Tarefa indisponível</h1><a href="./">Voltar à agenda</a>
 <?php elseif($page==='delete'):?><section class="card narrow"><h1>Excluir tarefa?</h1><p><?=h($task['title'])?></p><form method="post"><?php fields('delete');?><button>Confirmar exclusão</button> <a href="./">Cancelar</a></form></section>
 <?php elseif($page==='new'||$page==='edit'):?><a href="./">← Minha agenda</a><h1><?=$page==='edit'?'Editar tarefa':'Nova tarefa'?></h1><form class="card stack narrow" method="post"><?php fields($page==='edit'?'edit':'create');?>
 <label>Título<input name="title" maxlength="120" required value="<?=h($form['title']??'')?>"></label><label>Disciplina ou categoria<input name="category" maxlength="60" required value="<?=h($form['category']??'')?>"></label><label>Descrição<textarea name="description" maxlength="2000"><?=h($form['description']??'')?></textarea></label>
+<label>Minutos de trabalho restantes<input type="number" name="estimate" min="0" max="60000" placeholder="Ex.: 120" value="<?=h((string)($form['estimate']??($task?(rows($db,'SELECT minutes FROM estimates WHERE task_id=?',[$id])[0]['minutes']??''):'')))?>"></label>
+<?php if(!$cfg):?><p>Para distribuir esses minutos automaticamente, configure sua disponibilidade em Planejar após salvar.</p><?php endif;?>
 <label>Prazo<input type="date" required name="due" value="<?=h($form['due']??$today)?>"></label><div class="pair"><label>Prioridade<select name="priority"><?php options($priorities,$form['priority']??'Média');?></select></label><label>Status<select name="status"><?php options($statuses,$form['status']??'Pendente');?></select></label></div><button>Salvar tarefa</button></form>
 <?php else:?><div class="title"><div><span class="eyebrow"><?=brDate($today)?></span><h1>Minha agenda</h1></div><a class="button" href="?page=new">+ Nova tarefa</a></div>
 <div class="stats"><div><small>Total de tarefas</small><strong><?=count($all)?></strong></div><?php foreach($statuses as $s):?><div><small><?=$s?></small><strong><?=$counts[$s]??0?></strong></div><?php endforeach;?></div>

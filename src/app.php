@@ -32,6 +32,9 @@ function database(): PDO {
         task_id INTEGER NOT NULL REFERENCES tasks(id) ON DELETE CASCADE,
         day TEXT NOT NULL, minutes INTEGER NOT NULL CHECK(minutes>0), PRIMARY KEY(task_id,day)
     )');
+    $db->exec("CREATE TABLE IF NOT EXISTS availability(user_id INTEGER PRIMARY KEY REFERENCES users(id),weekday INTEGER NOT NULL,saturday INTEGER NOT NULL,sunday INTEGER NOT NULL,last_day TEXT NOT NULL);
+    CREATE TABLE IF NOT EXISTS day_limits(user_id INTEGER NOT NULL REFERENCES users(id),day TEXT NOT NULL,minutes INTEGER NOT NULL,PRIMARY KEY(user_id,day));
+    CREATE TABLE IF NOT EXISTS estimates(task_id INTEGER PRIMARY KEY REFERENCES tasks(id) ON DELETE CASCADE,minutes INTEGER NOT NULL,warning TEXT NOT NULL DEFAULT '')");
     return $db;
 }
 

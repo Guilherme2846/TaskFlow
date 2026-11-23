@@ -1,6 +1,6 @@
 <a href="./">← Minha agenda</a><h1>Planejar uma entrega</h1>
 <?php $eligible=array_filter($all,fn($t)=>$t['status']!=='Concluída' && $t['due']>=$today); ?>
-<div class="plan-grid"><section class="card stack"><h2>Tempo disponível</h2>
+<section class="card"><h2>Planejamento automático</h2><p>Defina sua rotina uma vez para recalcular todas as tarefas ao cadastrar, concluir ou alterar uma entrega.</p><a class="button" href="?page=availability">Configurar disponibilidade</a></section><div class="plan-grid"><section class="card stack"><h2>Tempo disponível</h2>
 <?php if(!$eligible):?><p>Cadastre uma entrega em aberto com prazo para hoje ou depois.</p><a href="?page=new">Nova tarefa</a><?php else:?>
 <form method="post" class="stack"><?php fields('preview');?><label>Entrega<select name="task"><?php foreach($eligible as $t):?><option value="<?=$t['id']?>" <?=(int)field('task')===(int)$t['id']?'selected':''?>><?=h($t['title'])?> · <?=brDate($t['due'])?></option><?php endforeach;?></select></label>
 <label>Quanto tempo o trabalho exige? (min)<input name="effort" type="number" min="1" max="1440" required value="<?=h(field('effort')?:'120')?>"></label>

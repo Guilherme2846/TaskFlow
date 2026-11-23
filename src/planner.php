@@ -13,7 +13,7 @@ if ($view==='board') {
 ?>
 <section class="card">
 <?php if($view==='week'):?>
-<div class="week-head"><h2><?= $start->format('d/m') ?> a <?= $start->modify('+6 days')->format('d/m/Y') ?></h2>
+<p><a href="?page=availability">Minha disponibilidade</a></p><div class="week-head"><h2><?= $start->format('d/m') ?> a <?= $start->modify('+6 days')->format('d/m/Y') ?></h2>
 <nav aria-label="Navegação entre semanas"><?php if($weekOffset>-104):?><a href="?view=week&amp;week=<?=$weekOffset-1?>" aria-label="Semana anterior">‹</a><?php endif;?>
 <a href="?view=week">Esta semana</a><?php if($weekOffset<104):?><a href="?view=week&amp;week=<?=$weekOffset+1?>" aria-label="Próxima semana">›</a><?php endif;?></nav></div>
 <?php else:?><h2>Quadro de tarefas</h2><?php endif;?>

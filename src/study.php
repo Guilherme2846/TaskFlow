@@ -6,7 +6,7 @@ function trial(PDO $db, int $user): ?string {
     return $record['expires']??null;
 }
 
-function recordStudy(PDO $db,int $user,bool $premium): void {
+function recordStudy(PDO $db,int $user,bool $premium): bool {
     guard($premium,'Ative o teste do Plus para registrar estudos.');
     $task=rows($db,'SELECT title,category FROM tasks WHERE id=? AND user_id=?', [field('task'),$user])[0]??null;
     guard((bool)$task,'Escolha uma tarefa da sua agenda.');
@@ -16,7 +16,9 @@ function recordStudy(PDO $db,int $user,bool $premium): void {
     guard($date<=date('Y-m-d'),'Escolha hoje ou uma data anterior.');
     $request=field('request');
     guard((bool)preg_match('/^[a-f0-9]{32}$/D',$request),'Reabra o formulário.');
-    $db->prepare('INSERT INTO study_log(user_id,request,title,category,studied,minutes) VALUES(?,?,?,?,?,?)
-        ON CONFLICT(user_id,request) DO NOTHING')->execute([$user,$request,$task['title'],$task['category'],$date,$minutes]);
+    $insert=$db->prepare('INSERT INTO study_log(user_id,request,title,category,studied,minutes) VALUES(?,?,?,?,?,?)
+        ON CONFLICT(user_id,request) DO NOTHING');
+    $insert->execute([$user,$request,$task['title'],$task['category'],$date,$minutes]);
+    return $insert->rowCount()===1;
 }
 

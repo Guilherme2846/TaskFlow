@@ -24,6 +24,7 @@ function buildSchedule(PDO $db,int $user,string $today): array {
 function saveSchedule(PDO $db,int $user,string $today): void {
     $db->exec('BEGIN IMMEDIATE');
     try {
+        guard(!availability($db,$user),'Sua conta já usa o cronograma automático.');
         $plan=buildSchedule($db,$user,$today);
         guard(!$plan['remaining'] && hash_equals(hash('sha256',serialize($plan)),field('preview')),'A agenda mudou. Gere uma nova prévia antes de salvar.');
         $id=$plan['task']['id'];
