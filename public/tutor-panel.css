@@ -1,0 +1,13 @@
+.tutor-dock{position:fixed;right: max(14px,env(safe-area-inset-right));bottom:max(12px,env(safe-area-inset-bottom));z-index:50}
+#tutor-launch{background:#005447;color:white;border:0;border-radius:28px;padding:13px 19px;font-weight:700;box-shadow:0 4px 20px #123c342e}
+#tutor-panel{position:absolute;bottom:calc(100% + 8px);right:0;width:min(390px,calc(100vw - 28px));height:min(570px,calc(100dvh - 84px));border:1px solid #b8cec6;border-radius:15px;box-shadow:0 10px 38px #123c3433;background:white;overflow:hidden}
+#tutor-panel:not([hidden]){display:flex;flex-direction:column}
+.dock-heading{display:flex;align-items:center;justify-content:space-between;padding:8px 14px;color:white;background:#004d40}
+#tutor-close{background:transparent;color:white;border:0;font-size:24px;padding:4px 10px}
+.dock-picker,#tutor-panel>p,#tutor-panel>a{margin:10px 14px}
+.dock-picker select{width:100%}
+#panel-chat{border:0;width:100%;min-height:0;flex:1}
+.tutor-embedded{background:white;margin:0;padding:12px}
+.tutor-embedded .card{border:0;box-shadow:none;margin:0;padding:0}
+#tutor-dialog p{white-space:pre-wrap;overflow-wrap:anywhere;background:#eef5f1;border-radius:10px;padding:10px}
+body.signed{padding-bottom:65px}

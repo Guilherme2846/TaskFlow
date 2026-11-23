@@ -21,10 +21,12 @@ tutor.addEventListener('submit', async event => {
       status.remove();
     } else {
       const question = payload.get('goal') + ' · ' + payload.get('question');
-      status.textContent = question;
+      status.textContent = 'Você · ' + question;
       const answer = document.createElement('p');
       answer.style.whiteSpace = 'pre-wrap';
-      answer.textContent = data.resposta;
+      const label = document.createElement('strong');
+      label.textContent = 'Tutor IA';
+      answer.append(label, document.createElement('br'), document.createTextNode(data.resposta));
       log.append(answer);
       turns.push({question:question.slice(0,6000),answer:data.resposta.slice(0,6000)});
       tutor.elements.question.value = '';
