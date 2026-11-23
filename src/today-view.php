@@ -12,5 +12,5 @@ $blocks=rows($db,"SELECT t.id,t.title,t.category,b.minutes FROM study_blocks b J
 <div class="daily-grid"><section class="card"><h2>Estudo reservado para hoje</h2>
 <?php if(!$blocks):?><p>Seu dia ainda não tem blocos reservados. Escolha uma entrega para distribuir o esforço até o prazo.</p>
 <?php else: foreach($blocks as $b):?><div class="daily-row"><div><small><?=h($b['category'])?></small><h3><?=h($b['title'])?></h3></div><strong><?=(int)$b['minutes']?> min</strong></div><?php endforeach;endif;?>
-<a href="?page=schedule">Planejar uma entrega →</a></section>
+<a href="<?=$cfg?'?view=week':'?page=availability'?>"><?=$cfg?'Ver cronograma da semana':'Configurar disponibilidade'?></a></section>
 <section class="card"><h2>Prazos em aberto</h2><?php foreach(['Atrasada'=>'Atrasadas','Vence hoje'=>'Vencem hoje','Próxima'=>'Próximas'] as $k=>$label):?><a class="deadline-row" href="?view=list&amp;filter=<?=urlencode($k)?>"><span><?=h($label)?></span><strong><?=$deadlines[$k]??0?></strong></a><?php endforeach;?></section></div>

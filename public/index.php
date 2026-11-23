@@ -16,6 +16,7 @@ require dirname(__DIR__).'/src/study.php';
 require dirname(__DIR__).'/src/schedule.php';
 require dirname(__DIR__).'/src/availability.php';
 $cfg=$user?availability($db,$user):null;
+if ($cfg && $page==='schedule' && $_SERVER['REQUEST_METHOD']==='GET') redirect('?view=week');
 if($cfg && $cfg['last_day']!==$today) {
     $db->exec('BEGIN IMMEDIATE');
     try { refreshBlocks($db,$user,$today);$db->exec('COMMIT'); }
@@ -120,8 +121,8 @@ $form=$error && isset($_POST['title'])?$_POST:($task??[]);
 <!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>TaskFlow · Agenda acadêmica</title><link rel="stylesheet" href="style.css"><link rel="stylesheet" href="agenda.css?v=studio3"><link rel="stylesheet" href="studio.css?v=1"><link rel="stylesheet" href="tutor-panel.css"></head><body class="<?=$user?'signed':'guest'?>">
 <header><div class="wrap bar"><a class="brand" href="./"><i>✓</i>TaskFlow</a><?php if($user):?><div class="account"><span><?=h($name)?></span><a class="top-link" href="?page=plans"><?=$premium?'Meu Plus':'Planos'?></a><form method="post"><?php fields('logout');?><button class="light">Sair</button></form></div><?php endif;?></div></header>
 <?php $home=!$page && !isset($_GET['view']) && !$filter && !$query;
-if($user): $active=$home?'Hoje':(['availability'=>'Disponibilidade','schedule'=>'Planejar','study'=>'Tempo de estudo','assistant'=>'Assistente IA','tutor'=>'Assistente IA','plans'=>'Planos'][$page]??'Agenda'); ?>
-<nav class="app-nav" aria-label="Navegação principal"><div class="wrap"><?php foreach(['Hoje'=>'./','Agenda'=>'?view=list','Planejar'=>'?page=schedule','Disponibilidade'=>'?page=availability','Tempo de estudo'=>'?page=study','Assistente IA'=>'?page=assistant'] as $label=>$url):?><a href="<?=$url?>" aria-current="<?=$active===$label?'page':'false'?>"><?=$label?></a><?php endforeach;?></div></nav><?php endif;?>
+if($user): $active=$home?'Hoje':(['availability'=>'Disponibilidade','schedule'=>'Disponibilidade','study'=>'Tempo de estudo','assistant'=>'Assistente IA','tutor'=>'Assistente IA','plans'=>'Planos'][$page]??'Agenda'); ?>
+<nav class="app-nav" aria-label="Navegação principal"><div class="wrap"><?php foreach(['Hoje'=>'./','Agenda'=>'?view=list','Disponibilidade'=>'?page=availability','Tempo de estudo'=>'?page=study','Assistente IA'=>'?page=assistant'] as $label=>$url):?><a href="<?=$url?>" aria-current="<?=$active===$label?'page':'false'?>"><?=$label?></a><?php endforeach;?></div></nav><?php endif;?>
 <main class="wrap"><?php if($error):?><p class="error" role="alert"><?=h($error)?></p><?php endif;if($notice):?><p class="notice" role="status"><?=h($notice)?></p><?php endif;?>
 <?php if($user && $cfg && (!$page || in_array($page,['availability','schedule'],true))):
 $alerts=rows($db,"SELECT t.id,t.title,t.due,e.minutes,COALESCE(SUM(b.minutes),0) AS planned,MAX(b.day) AS last FROM estimates e JOIN tasks t ON t.id=e.task_id LEFT JOIN study_blocks b ON b.task_id=t.id AND b.day BETWEEN ? AND t.due WHERE t.user_id=? AND t.status!='Concluída' AND e.warning!='' GROUP BY t.id ORDER BY t.due,t.id",[$today,$user]);
@@ -136,7 +137,7 @@ if($alerts): $highRisk=count(array_filter($alerts,fn($a)=>$a['due'] >= $today &&
 <label>Título<input name="title" maxlength="120" required value="<?=h($form['title']??'')?>"></label><label>Disciplina ou categoria<input name="category" maxlength="60" required value="<?=h($form['category']??'')?>"></label><label>Descrição<textarea name="description" maxlength="2000"><?=h($form['description']??'')?></textarea></label>
 <label>Tempo estimado para terminar (min)<input type="number" name="estimate" min="0" max="60000" placeholder="Ex.: 120" value="<?=h((string)($form['estimate']??($task?(rows($db,'SELECT minutes FROM estimates WHERE task_id=?',[$id])[0]['minutes']??''):'')))?>"></label>
 <small>Quantos minutos você acha que ainda precisa? Pode ajustar depois, conforme avançar na atividade.</small>
-<?php if(!$cfg):?><p>Para distribuir esses minutos automaticamente, configure sua disponibilidade em Planejar após salvar.</p><?php endif;?>
+<?php if(!$cfg):?><p>Para distribuir esses minutos automaticamente, abra a aba Disponibilidade depois de salvar e informe quanto tempo pode estudar.</p><?php endif;?>
 <label>Prazo<input type="date" required name="due" value="<?=h($form['due']??$today)?>"></label><div class="pair"><label>Prioridade<select name="priority"><?php options($priorities,$form['priority']??'Média');?></select></label><label>Status<select name="status"><?php options($statuses,$form['status']??'Pendente');?></select></label></div><button>Salvar tarefa</button></form>
 <?php else:?><div class="title"><div><span class="eyebrow"><?=brDate($today)?></span><h1><?=$view==='week'?'Agenda semanal':($view==='board'?'Quadro de tarefas':'Minhas atividades')?></h1></div><a class="button" href="?page=new">+ Nova tarefa</a></div>
 <?php if($view!=='week'):?><div class="stats"><div><small>Total de tarefas</small><strong><?=count($all)?></strong></div><?php foreach($statuses as $s):?><div><small><?=$s?></small><strong><?=$counts[$s]??0?></strong></div><?php endforeach;?></div><?php endif;?>

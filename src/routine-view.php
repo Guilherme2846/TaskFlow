@@ -6,3 +6,5 @@
 <section class="card stack"><h2>Datas personalizadas</h2><?php if(!$cfg):?><p>Salve a semana habitual para liberar exceções por data.</p><?php else:?><form class="stack" method="post"><?php fields('date_limit');?><label>Data<input type="date" required name="date" min="<?=$today?>" value="<?=$today?>"></label><label>Tempo total nesse dia (min)<input type="number" min="0" max="1440" required name="minutes"></label><button>Aplicar exceção</button></form>
 <?php foreach(rows($db,'SELECT day,minutes FROM day_limits WHERE user_id=? AND day>=? ORDER BY day',[$user,$today]) as $exception):?><form method="post" class="block-row"><?php fields('remove_date');?><input type="hidden" name="date" value="<?=$exception['day']?>"><span><?=brDate($exception['day'])?> · <?=$exception['minutes']?> min</span><button>Restaurar padrão</button></form><?php endforeach;endif;?></section></div>
 <?php if($cfg):?><p><a href="?page=new">Cadastrar atividade com estimativa</a> · <a href="?view=week">Ver semana recalculada</a></p><?php endif;?>
+
+<?php if(!$cfg): ?><p><a href="?page=schedule">Simular uma entrega antes de definir minha rotina</a></p><?php endif; ?>
