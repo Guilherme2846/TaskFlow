@@ -35,20 +35,23 @@ function updateAvailability(PDO $db,int $user,string $today,string $action): voi
 }
 
 function estimateWarning(int $estimated, int $planned, string $due, string $today, ?string $last): string {
-    if ($due < $today) return 'O prazo já passou. Restam '.$estimated.' min pela estimativa atual.';
+    if ($due < $today) return "O prazo já passou e você estima que ainda precisa de $estimated min. Se a entrega continua em aberto, confirme a nova data para reorganizar o estudo.";
     $missing = $estimated - $planned;
     if ($missing > 0) {
         $hours = intdiv($missing, 60);
         $minutes = $missing % 60;
         $duration = $hours ? $hours.' h'.($minutes ? ' '.$minutes.' min' : '') : $minutes.' min';
-        $balance = "Faltam $duration na agenda. Cabem $planned dos $estimated min estimados até a entrega.";
-        if ($missing >= 180) return "Risco alto. $balance Divida o trabalho em mais sessões ou renegocie o prazo.";
-        if (!$planned) return "Sem horário reservado. $balance Abra um horário antes da entrega.";
-        if ($missing <= 30) return "Apertado. $balance Se terminar um pouco antes do previsto, pode dar tempo.";
-        return "Replaneje. $balance Reserve mais tempo ou reveja o que precisa entregar.";
+        $balance = "Você estima $estimated min de trabalho e tem $planned min reservados até a entrega.";
+        if (!$planned) {
+            $level = $missing >= 180 ? 'Risco alto.' : 'Sem horário reservado.';
+            return "$level A atividade exige cerca de $duration pela sua estimativa. Consulte a disponibilidade e reserve o primeiro bloco antes da entrega.";
+        }
+        if ($missing >= 180) return "Risco alto. $balance Para seguir esse plano, seria preciso liberar mais $duration. Priorize as etapas obrigatórias e, se elas também ficarem sem tempo, converse sobre o prazo.";
+        if ($missing <= 30) return "Apertado. $balance A diferença é de $duration. Comece pelo essencial e, ao terminar a primeira etapa, confira quanto tempo ainda precisa.";
+        return "Replaneje. $balance Faltam $duration para acomodar a estimativa. Separe as etapas obrigatórias dos ajustes opcionais e veja se precisa reservar outro bloco.";
     }
     if ($due === $today) return 'Corrido: a atividade vence hoje.';
-    return $last === $due ? "Corrido: os $estimated min estimados cabem, mas o último bloco fica no dia da entrega." : '';
+    return $last === $due ? 'O trabalho estimado cabe até a entrega. O último bloco cai no dia do prazo. Se quiser tempo para revisar, antecipe uma etapa.' : '';
 }
 
 function refreshBlocks(PDO $db,int $user,string $today): array {
