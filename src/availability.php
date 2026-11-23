@@ -34,6 +34,13 @@ function updateAvailability(PDO $db,int $user,string $today,string $action): voi
         ->execute([$user,$date,validatedMinutes('minutes',1440)]);
 }
 
+function estimateWarning(int $estimated, int $planned, string $due, string $today, ?string $last): string {
+    if ($due < $today) return 'O prazo já passou. Restam '.$estimated.' min pela estimativa atual.';
+    $missing = $estimated - $planned;
+    if ($missing > 0) return "Com a disponibilidade atual, cabem $planned dos $estimated min estimados até a entrega. Para acomodar toda a estimativa, faltam $missing min na agenda.";
+    return $last === $due ? "Corrido: os $estimated min estimados cabem, mas o último bloco fica no dia da entrega." : '';
+}
+
 function refreshBlocks(PDO $db,int $user,string $today): array {
     $config=availability($db,$user);
     if(!$config) return [];
@@ -75,14 +82,14 @@ function refreshBlocks(PDO $db,int $user,string $today): array {
     }
     // Antecipação por prazo: mantém viáveis todas as reservas e aproveita hoje.
     foreach($tasks as $t) {
-        $amount=$accepted[$t['id']];$missing=$t['minutes']-$amount;$last=null;
+        $amount=$accepted[$t['id']];$last=null;
         foreach($slots as $d=>$free) {
             if(!$amount || $d>$t['due']) break;
             $n=min($free,$amount);
             if(!$n) continue;
             $insert->execute([$t['id'],$d,$n]);$slots[$d]-=$n;$amount-=$n;$last=$d;
         }
-        $message=$missing?"Não cabe até o prazo: faltam $missing min.":($last===$t['due']?'Corrido: o último bloco cai no dia da entrega.':'');
+        $message=estimateWarning((int)$t['minutes'], $accepted[$t['id']], $t['due'], $today, $last);
         $warn->execute([$message,$t['id']]);
     }
     $db->prepare('UPDATE availability SET last_day=? WHERE user_id=?')->execute([$today,$user]);
