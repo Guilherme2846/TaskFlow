@@ -37,7 +37,16 @@ function updateAvailability(PDO $db,int $user,string $today,string $action): voi
 function estimateWarning(int $estimated, int $planned, string $due, string $today, ?string $last): string {
     if ($due < $today) return 'O prazo já passou. Restam '.$estimated.' min pela estimativa atual.';
     $missing = $estimated - $planned;
-    if ($missing > 0) return "Com a disponibilidade atual, cabem $planned dos $estimated min estimados até a entrega. Para acomodar toda a estimativa, faltam $missing min na agenda.";
+    if ($missing > 0) {
+        $hours = intdiv($missing, 60);
+        $minutes = $missing % 60;
+        $duration = $hours ? $hours.' h'.($minutes ? ' '.$minutes.' min' : '') : $minutes.' min';
+        $balance = "Faltam $duration na agenda. Cabem $planned dos $estimated min estimados até a entrega.";
+        if ($missing >= 180) return "Risco alto. $balance Divida o trabalho em mais sessões ou renegocie o prazo.";
+        if (!$planned) return "Sem horário reservado. $balance Abra um horário antes da entrega.";
+        if ($missing <= 30) return "Apertado. $balance Se terminar um pouco antes do previsto, pode dar tempo.";
+        return "Replaneje. $balance Reserve mais tempo ou reveja o que precisa entregar.";
+    }
     return $last === $due ? "Corrido: os $estimated min estimados cabem, mas o último bloco fica no dia da entrega." : '';
 }
 
