@@ -42,20 +42,23 @@ if ($_SERVER['REQUEST_METHOD']==='POST') {
             $db->prepare('INSERT INTO trials(user_id,expires) VALUES(?,?) ON CONFLICT(user_id) DO NOTHING')->execute([$user,$ends]);
             redirect('?page=study');
         }
-        if(in_array($action,['create','edit','advance','delete','study','routine','date_limit','remove_date'],true)) {
+        if(in_array($action,['create','edit','advance','delete','study','edit_study','remove_study','routine','date_limit','remove_date'],true)) {
             $db->exec('BEGIN IMMEDIATE'); $writing=true;
         }
         if(in_array($action,['routine','date_limit','remove_date'],true)) {
             updateAvailability($db,$user,$today,$action);refreshBlocks($db,$user,$today);$db->exec('COMMIT');
             $_SESSION['notice']='Disponibilidade salva. Todas as entregas foram recalculadas.';redirect('?view=week');
         }
-        if ($action==='study') {
-            if(recordStudy($db,$user,$premium)) {
-                $db->prepare('UPDATE estimates SET minutes=MAX(0,minutes-?) WHERE task_id=?')->execute([(int)field('minutes'),(int)field('task')]);
+        if (in_array($action,['study','edit_study','remove_study'],true)) {
+            if ($action==='study') {
+                recordStudy($db,$user,$premium);
+                $date=field('studied');
+            } else {
+                $date=correctStudy($db,$user,$action==='remove_study',$today);
             }
             refreshBlocks($db,$user,$today);$db->exec('COMMIT');
-            $_SESSION['notice']='Sessão registrada.';
-            $week=(new DateTimeImmutable(field('studied')))->modify('monday this week');
+            $_SESSION['notice']=match($action){'study'=>'Sessão registrada.','edit_study'=>'Sessão atualizada.',default=>'Sessão removida.'};
+            $week=(new DateTimeImmutable($date))->modify('monday this week');
             $current=(new DateTimeImmutable($today))->modify('monday this week');
             $offset=intdiv((int)$current->diff($week)->format('%r%a'),7);
             redirect('?page=study&week='.$offset);

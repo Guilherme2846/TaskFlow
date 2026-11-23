@@ -35,6 +35,10 @@ function database(): PDO {
     $db->exec("CREATE TABLE IF NOT EXISTS availability(user_id INTEGER PRIMARY KEY REFERENCES users(id),weekday INTEGER NOT NULL,saturday INTEGER NOT NULL,sunday INTEGER NOT NULL,last_day TEXT NOT NULL);
     CREATE TABLE IF NOT EXISTS day_limits(user_id INTEGER NOT NULL REFERENCES users(id),day TEXT NOT NULL,minutes INTEGER NOT NULL,PRIMARY KEY(user_id,day));
     CREATE TABLE IF NOT EXISTS estimates(task_id INTEGER PRIMARY KEY REFERENCES tasks(id) ON DELETE CASCADE,minutes INTEGER NOT NULL,warning TEXT NOT NULL DEFAULT '')");
+    $db->exec('CREATE TABLE IF NOT EXISTS study_effects (
+        log_id INTEGER PRIMARY KEY REFERENCES study_log(id) ON DELETE CASCADE,
+        task_id INTEGER REFERENCES tasks(id) ON DELETE SET NULL, deducted INTEGER NOT NULL
+    )');
     return $db;
 }
 
