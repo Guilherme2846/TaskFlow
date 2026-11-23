@@ -47,6 +47,7 @@ function estimateWarning(int $estimated, int $planned, string $due, string $toda
         if ($missing <= 30) return "Apertado. $balance Se terminar um pouco antes do previsto, pode dar tempo.";
         return "Replaneje. $balance Reserve mais tempo ou reveja o que precisa entregar.";
     }
+    if ($due === $today) return 'Corrido: a atividade vence hoje.';
     return $last === $due ? "Corrido: os $estimated min estimados cabem, mas o último bloco fica no dia da entrega." : '';
 }
 
