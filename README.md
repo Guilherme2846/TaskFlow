@@ -80,9 +80,9 @@ Em Planejar → Configurar disponibilidade, salve os minutos por dia útil, sáb
 
 Na tarefa, informe os minutos de trabalho restantes. Uma alteração de atividade ou rotina refaz o plano futuro da conta. As reservas começam hoje e terminam até a entrega. Havendo disputa, a prioridade alta recebe tempo antes da média e da baixa. Dentro de cada nível, vence o prazo mais próximo. Quando tudo cabe, o sistema preserva a capacidade necessária para tarefas com prazo curto. O aviso informa os minutos sem encaixe ou sinaliza quando a última sessão cai no dia da entrega. Tempo registrado em Estudos reduz a estimativa; quem usa o gratuito pode ajustá-la ao editar a tarefa.
 
-## Tutor da atividade
+## TutorIA
 
-Em Assistente IA, selecione uma atividade e abra o tutor. Em Agenda também há um link Tutor IA ao lado da atividade. O tutor usa título, disciplina, prazo e descrição da atividade selecionada. Cole o enunciado na descrição e escolha roteiro, explicação, revisão de rascunho ou ensaio oral. A revisão precisa de um texto do aluno. Com a API configurada, o GPT recebe até quatro trocas anteriores da página atual para dar continuidade à conversa.
+Em Assistente IA, selecione uma atividade e abra o tutor. Em Agenda também há um link TutorIA ao lado da atividade. O tutor usa título, disciplina, prazo e descrição da atividade selecionada. Cole o enunciado na descrição e escolha roteiro, explicação, revisão de rascunho ou ensaio oral. A revisão precisa de um texto do aluno. Com a API configurada, o GPT recebe até quatro trocas anteriores da página atual para dar continuidade à conversa.
 
 Para usar o GPT integrado no Windows, encerre o servidor PHP atual com Ctrl+C. No PowerShell da pasta do projeto execute `.\Iniciar-Com-GPT.ps1` e informe uma chave de API da OpenAI com acesso ao modelo. O campo é oculto e a chave fica no ambiente do servidor durante sua execução. O padrão é gpt-4.1-mini, ajustável por OPENAI_MODEL. Sem chave, o tutor gera a pergunta contextualizada e o aluno pode copiá-la ao ChatGPT; a geração da resposta acontece no chat externo. A IA local de organização continua disponível na mesma aba.
 

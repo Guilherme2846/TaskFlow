@@ -25,7 +25,7 @@ tutor.addEventListener('submit', async event => {
       const answer = document.createElement('p');
       answer.style.whiteSpace = 'pre-wrap';
       const label = document.createElement('strong');
-      label.textContent = 'Tutor IA';
+      label.textContent = 'TutorIA';
       answer.append(label, document.createElement('br'), document.createTextNode(data.resposta));
       log.append(answer);
       turns.push({question:question.slice(0,6000),answer:data.resposta.slice(0,6000)});
