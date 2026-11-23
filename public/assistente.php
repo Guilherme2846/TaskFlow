@@ -26,6 +26,7 @@ if ($mode==='tutor') {
     if(!$task) reply(404,'Atividade indisponível.');
     $goal=field('goal');
     $goals=[
+        'Ajuda geral'=>'Responda diretamente à dúvida do aluno no contexto da atividade. Adapte a resposta ao que ele pedir, como interpretar o enunciado, discutir uma ideia ou resolver uma etapa. Se ele abrir a conversa sem uma pergunta, sugira um primeiro passo ligado ao enunciado e pergunte em que ponto ele quer ajuda.',
         'Montar um roteiro'=>'Divida a entrega em etapas concretas e sugira um primeiro passo que o aluno possa executar agora.',
         'Explicar um conceito'=>'Explique a dúvida em linguagem simples, dê um exemplo ligado à atividade e proponha uma pergunta de verificação.',
         'Revisar meu rascunho'=>'Compare o rascunho com o enunciado, identifique uma lacuna específica e sugira uma revisão justificada.',

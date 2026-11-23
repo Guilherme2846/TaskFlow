@@ -5,8 +5,8 @@
 <h2><?=h($task['title'])?></h2><p style="white-space:pre-wrap"><?=h($task['description']?:'Adicione o enunciado para receber ajuda mais específica.')?></p><a href="?page=edit&amp;id=<?=$id?>">Editar enunciado</a></section>
 <?php endif; ?><section class="card stack"><?php if(empty($embedded)): ?><h2>Trabalhar nesta tarefa</h2><?php endif; ?>
 <form class="stack" id="tutor-form"><input type="hidden" name="mode" value="tutor"><input type="hidden" name="task" value="<?=$id?>"><input type="hidden" name="token" value="<?=h($_SESSION['token'])?>">
-<label>Como quer ajuda?<select name="goal"><option>Montar um roteiro</option><option>Explicar um conceito</option><option>Revisar meu rascunho</option><option>Ensaiar a apresentação</option></select></label>
-<label>Dúvida ou rascunho<textarea name="question" maxlength="6000" rows="5" placeholder="Cole o que você já fez ou conte em qual parte travou."></textarea></label>
+<label>Como quer ajuda?<select name="goal"><option>Ajuda geral</option><option>Montar um roteiro</option><option>Explicar um conceito</option><option>Revisar meu rascunho</option><option>Ensaiar a apresentação</option></select></label>
+<label>Dúvida ou rascunho<textarea name="question" maxlength="6000" rows="5" placeholder="Faça uma pergunta sobre a atividade ou cole o que você já fez."></textarea></label>
 <?php if($connected):?><small>Ao enviar, o serviço <?=modelProvider()?> recebe o enunciado desta tarefa, sua pergunta e as últimas mensagens desta conversa.</small><button>Perguntar ao TutorIA</button>
 <?php else:?><p>A API está sem chave. Prepare a pergunta aqui e cole no ChatGPT para conversar sobre a atividade.</p><button>Preparar pergunta para o ChatGPT</button><?php endif;?>
 </form><div id="tutor-dialog" aria-live="polite"></div>
