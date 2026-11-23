@@ -43,7 +43,7 @@ Antes da aula, cadastrem uma leitura com prazo de ontem e uma prova com prazo fu
 
 O ChatGPT com Codex apoiou o planejamento, a programação, os testes e a documentação. Um exemplo concreto foi testar uma tarefa que vence hoje antes e depois de concluída. Ela permanece na agenda e deixa de contar como urgente. Essa regra pode ser conferida na função `urgency` e demonstrada ao vivo.
 
-A proposta comercial é hospedar uma única aplicação com contas individuais. Uma hipótese é oferecer gratuitamente a agenda básica e cobrar R$ 9,90 por mês por sessões de estudo e relatório semanal por disciplina. O preço é uma proposta acadêmica. O Plus pode ser experimentado por sete dias por conta. A cobrança recorrente é um próximo passo.
+A proposta comercial é hospedar uma única aplicação com contas individuais. Uma hipótese é oferecer gratuitamente a agenda básica e cobrar R$ 9,90 por mês por sessões de estudo e relatório semanal por disciplina. O preço é uma proposta acadêmica. O resumo local da agenda é gratuito. O TutorIA e as consultas à IA online exigem Plus ativo. O Plus pode ser experimentado por sete dias por conta. A cobrança recorrente é um próximo passo.
 
 
 ## Assistente de estudos e API

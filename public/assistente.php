@@ -14,6 +14,11 @@ if ($_SERVER['REQUEST_METHOD']!=='POST') reply(405,'Use POST.');
 if (!isset($_SESSION['token']) || !hash_equals($_SESSION['token'],field('token'))) reply(403,'Atualize a página.');
 $q=field('question');$mode=field('mode');
 if (($mode!=='tutor' && $q==='') || strlen($q)>($mode==='tutor'?24000:2400) || !in_array($mode,['local','cloud','tutor'],true)) reply(422,'Confira a pergunta e o modo.');
+if ($mode!=='local') {
+    require_once dirname(__DIR__).'/src/study.php';
+    $expires=trial(database(),(int)$_SESSION['user']);
+    if (!$expires || $expires<=date('Y-m-d')) reply(403,'A IA online está disponível no TaskFlow Plus.');
+}
 $category=field('category');
 if ($mode==='cloud' || ($mode==='tutor' && modelKey())) {
     $recent=array_values(array_filter($_SESSION['cloud_requests']??[], fn($at)=>$at>time()-60));

@@ -1,4 +1,4 @@
-<?php if(!$task): http_response_code(404); ?><h1>Atividade indisponível</h1><a href="?view=list">Voltar à agenda</a>
+<?php if(!$premium) { require __DIR__.'/tutor-locked.php'; return; } if(!$task): http_response_code(404); ?><h1>Atividade indisponível</h1><a href="?view=list">Voltar à agenda</a>
 <?php else: $connected=(bool)modelKey(); ?>
 <?php if(empty($embedded)): ?><a href="?view=list">← Minha agenda</a><h1>TutorIA</h1>
 <div class="plan-grid"><section class="card stack"><small><?=h($task['category'])?> · entrega <?=brDate($task['due'])?></small>

@@ -1,0 +1,1 @@
+<div class="card stack"><strong>TutorIA · Plus</strong><p>Converse sobre uma tarefa, revise um rascunho ou ensaie sua apresentação com o Plus.</p><a href="?page=plans" target="_top">Ver plano Plus</a></div>
