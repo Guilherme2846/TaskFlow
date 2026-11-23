@@ -11,3 +11,12 @@
 .tutor-embedded .card{border:0;box-shadow:none;margin:0;padding:0}
 #tutor-dialog p{white-space:pre-wrap;overflow-wrap:anywhere;background:#eef5f1;border-radius:10px;padding:10px}
 body.signed{padding-bottom:65px}
+
+.tutor-dock{display:flex;align-items:center;gap:6px}
+#alert-launch{background:#fff4d8;color:#704400;border:1px solid #d4aa5a;border-radius:24px;padding:10px 13px;font-weight:700}
+#alert-launch.critical{background:#fff0eb;color:#8a3018;border-color:#cc8066}
+#panel-alerts{overflow:auto;padding:16px}
+#panel-alerts h2{font-size:1.12rem;margin:0}
+.deadline-note{padding:14px 0;border-bottom:1px solid #dae4df;margin-bottom:10px}
+.deadline-note p{margin:5px 0 8px}
+#panel-conversation:not([hidden]){display:flex;flex-direction:column;flex:1;min-height:0}

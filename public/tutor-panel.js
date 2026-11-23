@@ -7,13 +7,25 @@ function showTask() {
   const url = '?page=tutor&panel=1&id=' + encodeURIComponent(picker.value);
   if (frame.getAttribute('src') !== url) frame.src = url;
 }
-function toggleTutor(open) {
+const alertsButton = document.querySelector('#alert-launch');
+const alertsView = document.querySelector('#panel-alerts');
+const chatView = document.querySelector('#panel-conversation');
+let activeButton = launch;
+function toggleTutor(open, button = launch) {
+  const returnFocus = activeButton;
+  if (open) activeButton = button;
+  const alertsOpen = open && button === alertsButton;
   panel.hidden = !open;
-  launch.setAttribute('aria-expanded', String(open));
-  if (open && picker) showTask();
-  (open ? closePanel : launch).focus();
+  if (alertsView) alertsView.hidden = !alertsOpen;
+  chatView.hidden = alertsOpen;
+  launch.setAttribute('aria-expanded', String(open && !alertsOpen));
+  alertsButton?.setAttribute('aria-expanded', String(alertsOpen));
+  if (open && !alertsOpen && picker) showTask();
+  (open ? closePanel : returnFocus).focus();
 }
-launch.addEventListener('click', () => toggleTutor(panel.hidden));
+for (const button of [launch, alertsButton].filter(Boolean)) {
+  button.addEventListener('click', () => toggleTutor(panel.hidden || activeButton !== button, button));
+}
 closePanel.addEventListener('click', () => toggleTutor(false));
 picker?.addEventListener('change', showTask);
 frame?.addEventListener('load', () => {
